@@ -19,9 +19,10 @@ public class ChunkDownloadClient
         }
         String filename = args[0];
         printBanner(filename);
+        FileService fileService = null;
         try
         {
-            FileService          fileService          = new FileService(filename);
+            fileService          = new FileService(filename);
             ChunkDownloadService chunkDownloadService = new ChunkDownloadService(filename, fileService);
             ChecksumService      checksumService      = new ChecksumService(fileService.getOutputPath());
 
@@ -40,6 +41,18 @@ public class ChunkDownloadClient
         }
         catch (Exception e)
         {
+            if (fileService != null)
+            {
+                try
+                {
+                    Files.deleteIfExists(fileService.getOutputPath());
+                    System.err.println("\n[Client] 오류 발생으로 다운로드 파일이 삭제되었습니다.");
+                }
+                catch (Exception deleteException)
+                {
+                    System.err.println("\n[Client] 파일 삭제 중 오류: " + deleteException.getMessage());
+                }
+            }
             System.err.println("\n[Client] 오류: " + e.getMessage());
             e.printStackTrace();
         }
